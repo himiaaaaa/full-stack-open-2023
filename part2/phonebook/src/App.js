@@ -109,14 +109,16 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNumber('')
-        }) 
-        setTimeout(() => {
-          setChangeMessage(`Added ${newName}`)
+          setChangeMessage(`Successfully added ${newName}`)
+          setTimeout(() => {
+          setChangeMessage(null)
         }, 5000)
-      }
-            
+        }) 
+        .catch(error => {
+          setChangeMessage(`[error] ${error.response.data.error}`)
+        })
+      }         
   }
-
 
   const deletePerson = id => {
     const person = persons.find(n => n.id === id)
