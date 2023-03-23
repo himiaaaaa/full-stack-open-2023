@@ -8,7 +8,8 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf build && cd ../part2/phonebook && npm run build && cp -r build ../../part3",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
+    "lint": "eslint ."
   },
   "author": "mia",
   "license": "MIT",
@@ -21,6 +22,7 @@
     "normalize-mongoose": "^1.0.0"
   },
   "devDependencies": {
+    "eslint": "^8.36.0",
     "nodemon": "^2.0.21"
   }
 }
