@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const bcrypt = require('bcrypt')
-
 const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
@@ -9,15 +8,44 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 
 beforeEach(async () => {  
+  await User.deleteMany({})
+
+  const passwordHash = await bcrypt.hash("kakakaka", 10)
+    const user = new User({
+       username: "ssss",
+       name: "kkkkk",
+       blogs: [],
+       passwordHash
+    })
+  
+    await user.save()
+}, 100000)
+
+beforeEach(async () => {  
   await Blog.deleteMany({})
 
+  const users = await User.find({})
+  const user = users[0]
+
   const blogObjects = helper.initialBlogs
-    .map(blog => new Blog(blog))
-  const promiseArray = blogObjects.map(blog => blog.save())
+    .map(blog => new Blog({
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      user: user._id,
+      likes: blog.likes ? blog.likes : 0
+    }))
+
+  const promiseArray = blogObjects.map(blog => {
+      blog.save()
+      user.blogs = user.blogs.concat(blog._id)
+    })
   await Promise.all(promiseArray)
+  await user.save()
 }, 100000)
 
 describe('when there is initially some blogs saved', () => {
+
   test('blogs are returned as json', async () => {
     await api
       .get('/api/blogs')
@@ -46,7 +74,17 @@ describe('when there is initially some blogs saved', () => {
 })
 
 describe('viewing a specific blog', () => {
-  test('a valid blog can be added', async () => {
+
+  test('a valid blog can be added by authorized users', async () => {
+    const user = {
+      username: "ssss",
+      password: "kakakaka",
+    }
+
+    const loginUser = await api
+      .post('/api/login')
+      .send(user)
+
     const newBlog = {
       title: 'Type wars',
       author: 'Robert C. Martin',
@@ -57,6 +95,7 @@ describe('viewing a specific blog', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `Bearer ${loginUser.body.token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -71,7 +110,41 @@ describe('viewing a specific blog', () => {
     )
   }, 100000)
 
+  test('a blog cannot be added by unauthorized users', async () => {
+    const newBlog = {
+      title: 'Typaaae wars',
+      author: 'Robeaaart C. Martin',
+      url: 'http://aaablog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+      likes: 200
+    }  
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+    const titles = blogsAtEnd.map(n => n.title)
+
+    expect(titles).not.toContain(
+      'Type wars'
+    )
+  }, 100000)
+
   test('new blog without likes property will be set to 0', async () => {
+    const user = {
+      username: "ssss",
+      password: "kakakaka",
+    }
+
+    const loginUser = await api
+      .post('/api/login')
+      .send(user)
+    
     const newBlog = {
       title: 'Typefghfhgfhg wars',
       url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWarsgfghfhgf.html',
@@ -82,6 +155,7 @@ describe('viewing a specific blog', () => {
       .post('/api/blogs')
       .send(newBlog)
       .expect(201)
+      .set('Authorization', `Bearer ${loginUser.body.token}`)
       .expect('Content-Type', /application\/json/)
 
       const blogsAtEnd = await helper.blogsInDb()
@@ -94,6 +168,15 @@ describe('viewing a specific blog', () => {
   }) 
 
   test('new blog without title property will not be added', async () => {
+    const user = {
+      username: "ssss",
+      password: "kakakaka",
+    }
+
+    const loginUser = await api
+      .post('/api/login')
+      .send(user)
+    
     const newBlog = {
       url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/Typsgfghfhgf.html',
       author: 'Robertdsjflkd C. Martin',
@@ -103,6 +186,7 @@ describe('viewing a specific blog', () => {
       .post('/api/blogs')
       .send(newBlog)
       .expect(400)
+      .set('Authorization', `Bearer ${loginUser.body.token}`)
 
       const blogsAtEnd = await helper.blogsInDb()
 
@@ -110,6 +194,15 @@ describe('viewing a specific blog', () => {
   }) 
 
   test('new blog without url property will not be added', async () => {
+    const user = {
+      username: "ssss",
+      password: "kakakaka",
+    }
+
+    const loginUser = await api
+      .post('/api/login')
+      .send(user)
+
     const newBlog = {
       title: 'dgfshjdfgsjdh',
       author: 'Robertdsjflkd C. Martin'
@@ -119,6 +212,7 @@ describe('viewing a specific blog', () => {
       .post('/api/blogs')
       .send(newBlog)
       .expect(400)
+      .set('Authorization', `Bearer ${loginUser.body.token}`)
 
       const blogsAtEnd = await helper.blogsInDb()
 
@@ -127,13 +221,24 @@ describe('viewing a specific blog', () => {
 })
 
 describe('deletion of a note', () => {
+  
   test('a blog can be deleted', async () => {
+    const user = {
+      username: "ssss",
+      password: "kakakaka",
+    }
+
+    const loginUser = await api
+      .post('/api/login')
+      .send(user)
+  
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
 
     await api    
-      .delete(`/api/blogs/${blogToDelete.id}`)    
+      .delete(`/api/blogs/${blogToDelete.id}`)  
       .expect(204)
+      .set('Authorization', `Bearer ${loginUser.body.token}`)
 
     const blogsAtEnd = await helper.blogsInDb()
 
@@ -228,9 +333,9 @@ describe('when there is initially one user in db', () => {
 
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toEqual(usersAtStart)
-})
+  })
 
-test('creation fails with proper statuscode and message if password does not exist', async () => {
+  test('creation fails with proper statuscode and message if password does not exist', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -248,7 +353,7 @@ test('creation fails with proper statuscode and message if password does not exi
 
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toEqual(usersAtStart)
-})
+  })
 
   test('creation fails with proper statuscode and message if username already taken', async () => {
       const usersAtStart = await helper.usersInDb()
@@ -290,30 +395,28 @@ test('creation fails with proper statuscode and message if password does not exi
 
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toEqual(usersAtStart)
-})
+  })
 
-test('creation fails with proper statuscode and message if password is less than three characters', async () => {
-  const usersAtStart = await helper.usersInDb()
+  test('creation fails with proper statuscode and message if password is less than three characters', async () => {
+    const usersAtStart = await helper.usersInDb()
 
-  const newUser = {
-      username: 'kakakaka',
-      name: 'Superkakakak',
-      password: 'sa',
-  }
+    const newUser = {
+        username: 'kakakaka',
+        name: 'Superkakakak',
+        password: 'sa',
+    }
 
-  const result = await api 
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/ )
+    const result = await api 
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/ )
 
-  expect(result.body.error).toContain('password or username must be at least 3 characters long')
+    expect(result.body.error).toContain('password or username must be at least 3 characters long')
 
-  const usersAtEnd = await helper.usersInDb()
-  expect(usersAtEnd).toEqual(usersAtStart)
-})
-
-
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toEqual(usersAtStart)
+  })
 
 })
 
