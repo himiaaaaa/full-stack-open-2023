@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
+import AddBlogForm from './components/AddBlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -15,6 +17,7 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [changeMessage, setChangeMessage] = useState(null)
+
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -117,48 +120,19 @@ const App = () => {
       <Notification message={changeMessage} />
       <p> {user.name} logged in </p> 
       <button type="submit" onClick={handleLogout}>logout</button>
-      <div>
-        <h2>create new</h2>
-        <form onSubmit={addBlog}>
-          <div>
-            title: 
-              <input 
-              type="text"
-              value={title}
-              name="Title"
-              onChange={({ target }) => setTitle(target.value)}
-              />
-          </div>
-          <div>
-            author: 
-              <input 
-              type="text"
-              value={author}
-              name="Author"
-              onChange={({ target }) => setAuthor(target.value)}
-              />
-          </div>
-          <div>
-            url: 
-              <input 
-              type="url"
-              value={url}
-              name="url"
-              onChange={({ target }) => setUrl(target.value)}
-              />
-          </div>
-          <div>
-            likes: 
-              <input 
-              type="likes"
-              value={likes}
-              name="likes"
-              onChange={({ target }) => setLikes(target.value)}
-              />
-          </div>
-          <button type="submit">create</button>
-        </form>
-      </div>
+      <Togglable buttonLabel="create">
+        <AddBlogForm 
+          handleSubmit={addBlog}
+          title={title}
+          author={author}
+          url={url}
+          likes={likes}
+          handleTitleChange={({ target }) => setTitle(target.value)}
+          handleAuthorChange={({ target }) => setAuthor(target.value)}
+          handleUrlChange={({ target }) => setUrl(target.value)}
+          handleLikesChange={({ target }) => setLikes(target.value)}
+        />
+      </Togglable>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
