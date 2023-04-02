@@ -13,7 +13,7 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
   const [changeMessage, setChangeMessage] = useState(null)
-
+  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -59,8 +59,6 @@ const App = () => {
     setUser(null)
   }
 
-  const blogFormRef = useRef()
-
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
     blogService
@@ -73,8 +71,6 @@ const App = () => {
           }, 5000)
         })
   }
-
-  
 
   if (user === null) {
     return (
@@ -112,7 +108,7 @@ const App = () => {
       <Notification message={changeMessage} />
       <p> {user.name} logged in </p> 
       <button type="submit" onClick={handleLogout}>logout</button>
-      <Togglable buttonLabel="create" ref={blogFormRef}>
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
         <AddBlogForm createBlog={addBlog} />
       </Togglable>
       {blogs.map(blog =>
