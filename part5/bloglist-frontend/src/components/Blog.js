@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = (({blog, addLikes, deleteBlog}) => {
+const Blog = (({ blog, addLikes, deleteBlog }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -11,29 +11,29 @@ const Blog = (({blog, addLikes, deleteBlog}) => {
 
   const [visible, setVisible] = useState(false)
 
-    const hideWhenVisible = { display: visible ? 'none' : '' }
-    const showWhenVisible = { display: visible ? '' : 'none' }
+  const hideWhenVisible = { display: visible ? 'none' : '' }
+  const showWhenVisible = { display: visible ? '' : 'none' }
 
-    const toggleVisibility = () => {
-        setVisible(!visible)
+  const toggleVisibility = () => {
+    setVisible(!visible)
+  }
+
+  const handleLike = () => {
+    const blogObject = {
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: blog.likes + 1,
     }
-  
-    const handleLike = () => {
-      const blogObject = {
-          title: blog.title,
-          author: blog.author,
-          url: blog.url,
-          likes: blog.likes + 1,
-      }
-      addLikes(blog.id, blogObject)
+    addLikes(blog.id, blogObject)
+  }
+
+  const handleDelete = () => {
+    if(window.confirm(`Remove blog ${blog.title} by ${blog.author}`)){
+      deleteBlog(blog.id)
     }
 
-    const handleDelete = () => {
-      if(window.confirm(`Remove blog ${blog.title} by ${blog.author}`)){
-        deleteBlog(blog.id)  
-      }
-     
-    }
+  }
 
   return (
     <div style={blogStyle}>
@@ -53,6 +53,6 @@ const Blog = (({blog, addLikes, deleteBlog}) => {
         <button onClick={handleDelete}>remove</button>
       </div>
     </div>
-)})
+  )})
 
 export default Blog
