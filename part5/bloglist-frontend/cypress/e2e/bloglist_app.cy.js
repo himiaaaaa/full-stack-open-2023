@@ -30,4 +30,23 @@ describe('Bloglist app', function() {
       cy.get('.error').contains('Wrong username or password')
     })
   })
+
+  describe('When logged in', function() {
+    beforeEach(function() {
+      cy.get('#username').type('testuserone')
+      cy.get('#password').type('numberone')
+      cy.get('#login-button').click()
+      cy.contains('one logged in')
+    })
+
+    it('A blog can be created', function() {
+      cy.contains('create new blog').click()
+      cy.get('#title').type('test title')
+      cy.get('#author').type('test author')
+      cy.get('#url').type('http://testurl.com')
+      cy.get('#create-button').click({ force: true })
+      cy.contains('test title test author')
+    })
+  })
+
 })
