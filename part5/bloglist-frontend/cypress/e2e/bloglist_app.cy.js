@@ -90,16 +90,16 @@ describe('Bloglist app', function() {
         cy.get('#password').type('numbertwo')
         cy.get('#login-button').click()
         cy.contains('two logged in')
+      })
 
+      it('only user who created the blog can delete it', function () {
         cy.contains('create new blog').click()
         cy.get('#title').type('test title two')
         cy.get('#author').type('test author two')
         cy.get('#url').type('http://testurltwo.com')
         cy.get('#create-button').click({ force: true })
         cy.contains('test title two test author two')
-      })
 
-      it.only('only user who created the blog can delete it', function () {
         cy.contains('logout').click()
         cy.get('#username').type('testuserone')
         cy.get('#password').type('numberone')
@@ -109,7 +109,26 @@ describe('Bloglist app', function() {
         cy.contains('view').click()
         cy.contains('remove').should('not.exist')
       })
-    })
 
+      it.only('blogs are ordered by likes', function () {
+        cy.contains('create new blog').click()
+        cy.get('#title').type('The title with most likes')
+        cy.get('#author').type('kkkk')
+        cy.get('#url').type('https://www.kkkk.com')
+        cy.get('#create-button').click({ force: true })
+
+        cy.contains('create new blog').click()
+        cy.get('#title').type('The title with the second most likes')
+        cy.get('#author').type('gggg')
+        cy.get('#url').type('https://www.gggg.com')
+        cy.get('#create-button').click({ force: true })
+
+        cy.contains('The title with most likes').contains('view').click()
+        cy.get('button').contains('like').click()
+
+        cy.get('.blog').eq(0).should('contain', 'The title with most likes')
+        cy.get('.blog').eq(1).should('contain', 'The title with the second most likes')
+      })
+    })
   })
 })

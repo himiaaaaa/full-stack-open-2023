@@ -38,7 +38,7 @@ const Blog = (({ blog, addLikes, deleteBlog, user }) => {
   const showDelete = blog.user.id === user.id ? true : false
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle}  className='blog'>
       <div style={hideWhenVisible} className='whenHidden'>
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>view</button>
