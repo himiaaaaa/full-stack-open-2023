@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = (({ blog, addLikes, deleteBlog }) => {
+const Blog = (({ blog, addLikes, deleteBlog, user }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -35,6 +35,8 @@ const Blog = (({ blog, addLikes, deleteBlog }) => {
 
   }
 
+  const showDelete = blog.user.id === user.id ? true : false
+
   return (
     <div style={blogStyle}>
       <div style={hideWhenVisible} className='whenHidden'>
@@ -50,7 +52,7 @@ const Blog = (({ blog, addLikes, deleteBlog }) => {
           <button onClick={handleLike}>likes</button>
         </p>
         <p>{blog.user!== null && blog.user.name}</p>
-        <button onClick={handleDelete}>remove</button>
+        {showDelete && <button onClick={handleDelete} id='remove-button'>remove</button>}
       </div>
     </div>
   )})

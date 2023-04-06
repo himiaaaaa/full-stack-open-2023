@@ -6,7 +6,15 @@ describe('Bloglist app', function() {
       username: 'testuserone',
       password: 'numberone'
     }
+
+    const usertwo = {
+      name: 'two',
+      username: 'testusertwo',
+      password: 'numbertwo'
+    }
+
     cy.request('POST', 'http://localhost:3003/api/users/', user)
+    cy.request('POST', 'http://localhost:3003/api/users/', usertwo)
     cy.visit('http://localhost:3000')
   })
 
@@ -58,7 +66,7 @@ describe('Bloglist app', function() {
         cy.contains('test title test author')
       })
 
-      it.only('user can add likes', function () {
+      it('user can add likes', function () {
         cy.contains('view').click()
         cy.contains('0')
           .contains('likes')
@@ -66,6 +74,42 @@ describe('Bloglist app', function() {
 
         cy.contains('1')
       })
+
+      it('user can delete their blogs', function () {
+        cy.contains('view').click()
+        cy.get('#remove-button').click()
+        cy.contains('remove').should('not.exist')
+      })
     })
+
+    describe('when there are more than one users', function () {
+      beforeEach(function () {
+        cy.contains('logout').click()
+
+        cy.get('#username').type('testusertwo')
+        cy.get('#password').type('numbertwo')
+        cy.get('#login-button').click()
+        cy.contains('two logged in')
+
+        cy.contains('create new blog').click()
+        cy.get('#title').type('test title two')
+        cy.get('#author').type('test author two')
+        cy.get('#url').type('http://testurltwo.com')
+        cy.get('#create-button').click({ force: true })
+        cy.contains('test title two test author two')
+      })
+
+      it.only('only user who created the blog can delete it', function () {
+        cy.contains('logout').click()
+        cy.get('#username').type('testuserone')
+        cy.get('#password').type('numberone')
+        cy.get('#login-button').click()
+        cy.contains('one logged in')
+
+        cy.contains('view').click()
+        cy.contains('remove').should('not.exist')
+      })
+    })
+
   })
 })
