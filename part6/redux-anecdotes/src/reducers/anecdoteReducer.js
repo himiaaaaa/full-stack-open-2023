@@ -32,15 +32,18 @@ const anecdoteSlice = createSlice({
         ...anecdoteToChange,
         votes: anecdoteToChange.votes + 1
       }
-      console.log(JSON.parse(JSON.stringify(state)))
       return state.map(anecdote => 
         anecdote.id !== id ? anecdote : changedAnecdote
       )
     },
     createAnecdotes(state, action) {
       const newAnecdote = action.payload
-      console.log(JSON.parse(JSON.stringify(state)))
-      state.push(newAnecdote)
+      console.log(newAnecdote)
+      state.push({        
+        content: newAnecdote, 
+        id: getId(),
+        votes: 0   
+      })
     }
   }
 })
