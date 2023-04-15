@@ -20,7 +20,7 @@ export const setNotification = (text, timeout) => {
         dispatch(showNotification(text))
         setTimeout(() => {
             dispatch(hideNotification())
-        }, timeout * 1000)
+        }, timeout * 1000) 
     }
 }
 export default notificationSlice.reducer
