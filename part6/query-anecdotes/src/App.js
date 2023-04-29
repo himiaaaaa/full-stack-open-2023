@@ -4,7 +4,7 @@ import { useQuery } from 'react-query'
 import { getAnecdotes } from './request'
 
 const App = () => {
-
+  
   const handleVote = (anecdote) => {
     console.log('vote')
   }
