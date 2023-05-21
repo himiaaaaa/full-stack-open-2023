@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
+import { useDispatch } from 'react-redux'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
 import AddBlogForm from './components/AddBlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Togglable from './components/Togglable'
+import { setNotification } from './reducers/notificationReducer'
+
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
-  const [changeMessage, setChangeMessage] = useState(null)
+  //const [errorMessage, setErrorMessage] = useState(null)
+  //const [changeMessage, setChangeMessage] = useState(null)
   const [refreshBlog, setRefreshBlog] = useState(false)
   const blogFormRef = useRef()
 
@@ -32,6 +35,8 @@ const App = () => {
     }
   }, [])
 
+  const dispatch = useDispatch()
+
   const handleLogin = async (event) => {
     event.preventDefault()
 
@@ -47,11 +52,9 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+      dispatch(setNotification(`${user.username} successfully logged in`, 5))
     } catch (exception) {
-      setErrorMessage('Wrong username or password')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
+      dispatch(setNotification('Wrong username or password', 5))
     }
   }
 
@@ -64,13 +67,10 @@ const App = () => {
     blogFormRef.current.toggleVisibility()
     blogService.create(blogObject).then((returnedBlog) => {
       setBlogs(blogs.concat(returnedBlog))
-      setChangeMessage(
-        `a new blog ${blogObject.title} by ${blogObject.author} added`
+      dispatch(setNotification(
+        `a new blog ${blogObject.title} by ${blogObject.author} added`, 5)
       )
       setRefreshBlog(!refreshBlog)
-      setTimeout(() => {
-        setChangeMessage(null)
-      }, 5000)
     })
   }
 
@@ -88,7 +88,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification message={errorMessage} />
+        <Notification />
         <form onSubmit={handleLogin}>
           <div>
             username
@@ -121,7 +121,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification message={changeMessage} />
+      <Notification />
       <p> {user.name} logged in </p>
       <button type="submit" onClick={handleLogout}>
         logout
