@@ -1,0 +1,10 @@
+post http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImxhbGEiLCJpZCI6IjY0MjIzMWFmMGU4ODAzNzQzYjFjYjIxMiIsImlhdCI6MTY3OTk3MzcwNX0.CgzBiKaqRO5n5YHjHGsHaOnWhnFS9XqgHkJbAhxA5uI
+
+{
+    "title": "mbbhhghghbsss",
+	"author": "hujghghkhu",
+	"url": "hunkjkjhjhjksdfsdd",
+	"likes": 2114
+}
