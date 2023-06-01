@@ -9,6 +9,7 @@ import { logout } from './reducers/authReducer'
 import { initializeBlogs } from './reducers/blogReducer'
 import { initializeUser } from './reducers/authReducer'
 import { initializeAllUsers } from './reducers/userReducer'
+import UserDisplay from './components/UserDisplay'
 
 
 const App = () => {
@@ -37,10 +38,11 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div className='container'>
       <h2>blogs</h2>
       <Notification />
       <p> {authUser.name} logged in </p>
+      <UserDisplay />
       <button type="submit" onClick={handleLogout}>
         logout
       </button>
