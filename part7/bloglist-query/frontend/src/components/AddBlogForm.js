@@ -1,36 +1,47 @@
-import { useState } from 'react'
+
+import { useQueryClient, useMutation } from 'react-query'
+import { createBlog } from '../request'
+import { useNotificationDispatch } from '../notificationContext'
 
 
-const AddBlogForm = ({ createBlog }) => {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
+const AddBlogForm = () => {
+  const queryClient = useQueryClient()
 
-  const handleTitleChange = (event) => {
-    setTitle(event.target.value)
-  }
+  const dispatch = useNotificationDispatch()
 
-  const handleAuthorChange = (event) => {
-    setAuthor(event.target.value)
-  }
+  const newBlogMutation = useMutation(createBlog, {
+    onSuccess: (newBlog) => {
+      const blogs = queryClient.getQueryData('blogs')
+      queryClient.setQueryData('blogs', blogs.concat(newBlog))
+    },
+    onError: () => {
+      dispatch({ type: 'showNotification', payload: 'fail to create the blog' })
+      setTimeout(() => {
+        dispatch({ type: 'hideNotification' })
+      }, 5000)
+    }
+  })
 
-  const handleUrlChange = (event) => {
-    setUrl(event.target.value)
-  }
-
-  const addBlog = (event) => {
+  const addBlog = async (event) => {
     event.preventDefault()
-    createBlog({
-      title: title,
-      author: author,
-      url: url,
-    })
-    setTitle('')
-    setAuthor('')
-    setUrl('')
+
+    const title = event.target.title.value
+    const author = event.target.author.value
+    const url = event.target.url.value
+
+    event.target.title.value = ''
+    event.target.author.value = ''
+    event.target.url.value = ''
+
+    newBlogMutation.mutate({ title, author, url })
+    console.log('new blog')
+
+    await dispatch({ type: 'showNotification', payload: `You added ${title} by ${author} !` })
+
+    setTimeout(() => {
+      dispatch({ type: 'hideNotification' })
+    }, 5000)
   }
-
-
 
   return (
     <div>
@@ -40,33 +51,24 @@ const AddBlogForm = ({ createBlog }) => {
             title:
           <input
             type="text"
-            value={title}
-            name="Title"
-            onChange={handleTitleChange}
+            name="title"
             placeholder='write title here'
-            id='title'
           />
         </div>
         <div>
             author:
           <input
             type="text"
-            value={author}
-            name="Author"
-            onChange={handleAuthorChange}
+            name="author"
             placeholder='write author here'
-            id='author'
           />
         </div>
         <div>
             url:
           <input
             type="url"
-            value={url}
             name="url"
-            onChange={handleUrlChange}
             placeholder='write url here'
-            id='url'
           />
         </div>
         <button type="submit" id='create-button'>create</button>

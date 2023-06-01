@@ -1,43 +1,38 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useContext } from 'react'
+import { useQuery } from 'react-query'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
 import AddBlogForm from './components/AddBlogForm'
-import blogService from './services/blogs'
 import loginService from './services/login'
 import Togglable from './components/Togglable'
-//import { useQueryClient } from 'react-query'
 import { useNotificationDispatch } from './notificationContext'
+import UserContext from './userContext'
+import { getBlogs, setToken } from './request'
 
 const App = () => {
 
+  const [user, userDispatch] = useContext(UserContext)
+
   const dispatch = useNotificationDispatch()
 
-  const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
-  const [refreshBlog, setRefreshBlog] = useState(false)
   const blogFormRef = useRef()
-
-  useEffect(() => {
-    blogService.getAll().then(blogs => {
-      blogs.sort((a,b) => b.likes - a.likes)
-      setBlogs( blogs )
-    })
-
-  }, [refreshBlog])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
+      userDispatch({ type: 'setUser', payload: user })
+      setToken(user.token)
     }
   }, [])
 
   const handleLogin = async (event) => {
     event.preventDefault()
+
+    const username = event.target.username.value
+    const password = event.target.password.value
+    event.target.username.value = ''
+    event.target.password.value = ''
 
     try {
       const user = await loginService.login({
@@ -48,10 +43,8 @@ const App = () => {
         'loggedBloglistUser', JSON.stringify(user)
       )
 
-      blogService.setToken(user.token)
-      setUser(user)
-      setUsername('')
-      setPassword('')
+      setToken(user.token)
+      userDispatch({ type: 'setUser', payload: user })
     } catch (exception) {
       dispatch({ type: 'showNotification', payload: 'Wrong username or password' })
       setTimeout(() => {
@@ -62,32 +55,29 @@ const App = () => {
 
   const handleLogout = () => {
     window.localStorage.clear()
-    setUser(null)
+    userDispatch({ type: 'clearUser' })
   }
 
-  const addBlog = (blogObject) => {
-    blogFormRef.current.toggleVisibility()
-    blogService
-      .create(blogObject)
-      .then(returnedBlog => {
-        setBlogs(blogs.concat(returnedBlog))
-        dispatch({ type: 'showNotification', payload: `a new blog ${blogObject.title} by ${blogObject.author} added` })
-        setRefreshBlog(!refreshBlog)
-        setTimeout(() => {
-          dispatch({ type: 'hideNotification' })
-        }, 5000)
-      })
+
+  const result = useQuery(
+    'blogs',
+    getBlogs,
+    {
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  )
+  console.log('1111', result)
+
+  if( result.isLoading ){
+    return <div>loading data...</div>
   }
 
-  const addLikes = async (id, blogObject) => {
-    await blogService.update(id, blogObject)
-    setRefreshBlog(!refreshBlog)
+  if( result.isError ){
+    return<div>blog service not available due to problem in server</div>
   }
 
-  const deleteBlog = async id => {
-    await blogService.remove(id)
-    setRefreshBlog(!refreshBlog)
-  }
+  const blogs = result.data
 
   if (user === null) {
     return (
@@ -99,9 +89,7 @@ const App = () => {
             username
             <input
               type="text"
-              value={username}
-              name="Username"
-              onChange={({ target }) => setUsername(target.value)}
+              name="username"
               id='username'
             />
           </div>
@@ -109,9 +97,7 @@ const App = () => {
             password
             <input
               type="password"
-              value={password}
-              name="Password"
-              onChange={({ target }) => setPassword(target.value)}
+              name="password"
               id='password'
             />
           </div>
@@ -128,10 +114,10 @@ const App = () => {
       <p> {user.name} logged in </p>
       <button type="submit" onClick={handleLogout}>logout</button>
       <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <AddBlogForm createBlog={addBlog} />
+        <AddBlogForm />
       </Togglable>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} addLikes={addLikes} deleteBlog={deleteBlog} user={user}/>
+        <Blog key={blog.id} blog={blog} user={user}/>
       )}
     </div>
   )

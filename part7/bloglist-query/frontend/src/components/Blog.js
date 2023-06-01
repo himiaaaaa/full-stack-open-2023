@@ -1,6 +1,16 @@
 import { useState } from 'react'
+import { useMutation, useQueryClient } from 'react-query'
+import { useNotificationDispatch } from '../notificationContext'
+import { updateLike,deleteBlog } from '../request'
+import { useUserValue } from '../userContext'
 
-const Blog = (({ blog, addLikes, deleteBlog, user }) => {
+const Blog = (({ blog }) => {
+  const queryClient = useQueryClient()
+
+  const user = useUserValue()
+
+  const dispatch = useNotificationDispatch()
+
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -18,24 +28,52 @@ const Blog = (({ blog, addLikes, deleteBlog, user }) => {
     setVisible(!visible)
   }
 
-  const handleLike = () => {
-    const blogObject = {
-      title: blog.title,
-      author: blog.author,
-      url: blog.url,
-      likes: blog.likes + 1,
+  const addLikeMutation = useMutation(updateLike, {
+    onSuccess: (updatedLike) => {
+      console.log('update', updatedLike)
+
+      const blogs = queryClient.getQueryData('blogs')
+
+      queryClient.setQueryData('blogs', blogs.map(blog =>
+        blog.id === updatedLike.id ? updatedLike : blog
+      ))
     }
-    addLikes(blog.id, blogObject)
+  })
+
+  const handleLike = async (blog) => {
+    addLikeMutation.mutate({ ...blog, likes: blog.likes + 1 })
+
+    await dispatch({ type: 'showNotification', payload: `You add one like for: ${blog.title} !` })
+
+    setTimeout(() => {
+      dispatch({ type: 'hideNotification' })
+    }, 5000)
   }
 
-  const handleDelete = () => {
+  const deleteMutation = useMutation(deleteBlog, {
+    onSuccess: (deletedBlog) => {
+      const blogs = queryClient.getQueryData('blogs')
+
+      queryClient.setQueryData('blogs', blogs.filter(blog =>
+        blog.id !== deletedBlog.id
+      ))
+    }
+  })
+
+  const handleDelete = async (blog) => {
     if(window.confirm(`Remove blog ${blog.title} by ${blog.author}`)){
-      deleteBlog(blog.id)
+      deleteMutation.mutate(blog)
     }
+    await dispatch({ type: 'showNotification', payload: `You deleted: ${blog.title} !` })
 
+    setTimeout(() => {
+      dispatch({ type: 'hideNotification' })
+    }, 5000)
   }
 
-  const showDelete = blog.user.id === user.id ? true : false
+  const showDelete = blog.user.username === user.username ? true : false
+  console.log('blog', blog)
+  console.log('user', user)
 
   return (
     <div style={blogStyle}  className='blog'>
@@ -49,10 +87,10 @@ const Blog = (({ blog, addLikes, deleteBlog, user }) => {
         <p>{blog.url}</p>
         <p>
           {blog.likes}
-          <button onClick={handleLike}>likes</button>
+          <button onClick={() => handleLike(blog)}>likes</button>
         </p>
         <p>{blog.user!== null && blog.user.name}</p>
-        {showDelete && <button onClick={handleDelete} id='remove-button'>remove</button>}
+        {showDelete && <button onClick={() => handleDelete(blog)} id='remove-button'>remove</button>}
       </div>
     </div>
   )})
