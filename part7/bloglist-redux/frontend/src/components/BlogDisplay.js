@@ -1,13 +1,16 @@
-import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { addLikes } from '../reducers/blogReducer'
+//import { useState } from 'react'
+//import { useDispatch } from 'react-redux'
+/* import { addLikes } from '../reducers/blogReducer'
 import { deleteBlogs } from '../reducers/blogReducer'
 import { setNotification } from '../reducers/notificationReducer'
+ */
+
+import { Link } from 'react-router-dom'
 
 const Blog = ({ blog }) => {
-  const dispatch = useDispatch()
+  //const dispatch = useDispatch()
 
-  const authUser = useSelector(state => state.authUser)
+  //const authUser = useSelector(state => state.authUser)
 
   const blogStyle = {
     paddingTop: 10,
@@ -17,16 +20,16 @@ const Blog = ({ blog }) => {
     marginBottom: 5,
   }
 
-  const [visible, setVisible] = useState(false)
+  /*   const [visible, setVisible] = useState(false)
 
   const hideWhenVisible = { display: visible ? 'none' : '' }
   const showWhenVisible = { display: visible ? '' : 'none' }
 
   const toggleVisibility = () => {
     setVisible(!visible)
-  }
+  } */
 
-  const handleLike = () => {
+  /* const handleLike = () => {
     dispatch(addLikes(blog))
     dispatch(setNotification(`You added one like for "${blog.title}" !`, 5))
   }
@@ -36,29 +39,28 @@ const Blog = ({ blog }) => {
       dispatch(deleteBlogs(blog.id))
       dispatch(setNotification(`You deleted "${blog.title}" !`, 5))
     }
-  }
+  } */
 
-  const showDelete = blog.user.username === authUser.username ? true : false
+  //const showDelete = blog.user.username === authUser.username ? true : false
 
   return (
     <div style={blogStyle} className="blog">
-      <div style={hideWhenVisible} className="whenHidden">
-        {blog.title} {blog.author}
-        <button onClick={toggleVisibility}>view</button>
+      <div className="whenHidden">
+        <Link to={`/blogs/${blog.id}`}>{blog.title} {blog.author}</Link>
       </div>
-      <div style={showWhenVisible} className="whenShown">
+      {/* <div>
         {blog.title} {blog.author}
-        <button onClick={toggleVisibility}>hide</button>
+        <button>hide</button>
         <p>{blog.url}</p>
         <p>
           {blog.likes}
           <button onClick={handleLike}>likes</button>
         </p>
         <p>{blog.user !== null && blog.user.name}</p>
-        {showDelete && <button onClick={handleDelete} id="remove-button">
+        <button onClick={handleDelete} id="remove-button">
             remove
-        </button>}
-      </div>
+        </button>
+      </div> */}
     </div>
   )
 }
