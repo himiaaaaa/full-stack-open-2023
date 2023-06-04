@@ -3,13 +3,15 @@ import notificationReducer from './reducers/notificationReducer'
 import blogReducer from './reducers/blogReducer'
 import userReducer from './reducers/userReducer'
 import authReducer from './reducers/authReducer'
+import commentReducer from './reducers/commentReducer'
 
 const store = configureStore({
   reducer: {
     blogs: blogReducer,
     notifications: notificationReducer,
     users: userReducer,
-    authUser: authReducer
+    authUser: authReducer,
+    comments: commentReducer
   }
 })
 

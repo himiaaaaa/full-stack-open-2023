@@ -14,10 +14,12 @@ const Blog = ({ blog }) => {
 
   const blogStyle = {
     paddingTop: 10,
+    paddingBottom: 10,
     paddingLeft: 2,
     border: 'solid',
     borderWidth: 1,
     marginBottom: 5,
+    marginTop: 5,
   }
 
   /*   const [visible, setVisible] = useState(false)
@@ -45,7 +47,7 @@ const Blog = ({ blog }) => {
 
   return (
     <div style={blogStyle} className="blog">
-      <div className="whenHidden">
+      <div>
         <Link to={`/blogs/${blog.id}`}>{blog.title} {blog.author}</Link>
       </div>
       {/* <div>

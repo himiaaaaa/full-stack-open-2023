@@ -7,6 +7,7 @@ import LoginForm from './components/LoginForm'
 import { initializeBlogs } from './reducers/blogReducer'
 import { initializeUser } from './reducers/authReducer'
 import { initializeAllUsers } from './reducers/userReducer'
+//import { initializeAllComments } from './reducers/commentReducer'
 import UserDisplay from './components/UserDisplay'
 import { Nav, Navbar } from 'react-bootstrap'
 import { logout } from './reducers/authReducer'
@@ -42,7 +43,7 @@ const App = () => {
   const Home = () => {
     return (
       <div>
-        <h2>Blogs App</h2>
+        <h1>Blogs App</h1>
         <AddBlogForm />
         <BlogList />
       </div>

@@ -3,6 +3,7 @@ import { createBlogs } from '../reducers/blogReducer'
 import { setNotification } from '../reducers/notificationReducer'
 import Togglable from './Togglable'
 import { useRef } from 'react'
+import { Form, Button } from 'react-bootstrap'
 
 const AddBlogForm = () => {
   const dispatch = useDispatch()
@@ -34,29 +35,19 @@ const AddBlogForm = () => {
   return (
     <Togglable buttonLabel="create new blog" ref={blogFormRef}>
       <h2>create new</h2>
-      <form onSubmit={addBlog}>
-        <div>
-          title:
-          <input
-            name="titleInput"
-          />
-        </div>
-        <div>
-          author:
-          <input
-            name="authorInput"
-          />
-        </div>
-        <div>
-          url:
-          <input
-            name="urlInput"
-          />
-        </div>
-        <button type="submit" id="create-button">
-          create
-        </button>
-      </form>
+      <Form onSubmit={addBlog}>
+        <Form.Group>
+          <Form.Label>Title:</Form.Label>
+          <Form.Control name="titleInput"/>
+          <Form.Label>Author:</Form.Label>
+          <Form.Control name="authorInput"/>
+          <Form.Label>Url:</Form.Label>
+          <Form.Control name="urlInput"/>
+          <Button type="submit" variant="primary">
+              create
+          </Button>
+        </Form.Group>
+      </Form>
     </Togglable>
   )
 }
