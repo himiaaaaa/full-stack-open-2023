@@ -84,12 +84,12 @@ const typeDefs = `
   type Author {
     name: String!
     id: ID!
-    born: Int
+    born: String
     bookCount: Int
   }
   type Book {
     title: String!
-    published: Int!
+    published: String!
     author: String!
     id: ID!
     genres: [String!]!
@@ -104,12 +104,12 @@ const typeDefs = `
     addBook(
       title: String!
       author: String!
-      published: Int!
+      published:String!
       genres: [String!]!
     ): Book
     editAuthor(
       name: String!
-      setBornTo: Int!
+      setBornTo: String!
     ): Author,
   }
 `
@@ -139,11 +139,13 @@ const resolvers = {
   Mutation: {
     addBook: (root, args) => {
       const book = { ...args, id: uuid() }
+      console.log('hh', authors.name)
       if(!authors.includes(book.author)){
         authors = authors.concat({ name: book.author, id: uuid()})
       }
-      books = books.concat(book)
-      return book
+       books = books.concat(book)
+       return book
+      
     },
     editAuthor: (root, args) => {
       const author = authors.find(a => a.name === args.name)
