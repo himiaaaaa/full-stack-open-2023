@@ -1,6 +1,28 @@
+import { useState, useEffect } from 'react'
+import { useMutation } from '@apollo/client'
+import { EDIT_AUTHOR } from '../queries'
 
-const Authors = ({show, authors}) => {
+const Authors = ({show, authors, setError}) => {
+  const[name, setName] = useState('')
+  const[born, setBorn] = useState('')
 
+  const [ changeAuthor, result ] = useMutation(EDIT_AUTHOR)
+
+  const submit = (event) => {
+    event.preventDefault()
+
+    changeAuthor({ variables: { name, born } })
+
+    setName('')
+    setBorn('')
+  }
+
+  useEffect(() => {
+    if(result.data && result.data.editAuthor === null){
+      setError('person not found')
+    }
+  }, [result.data]) // eslint-disable-line 
+ 
   if (!show) {
     return null
   }
@@ -24,6 +46,24 @@ const Authors = ({show, authors}) => {
           ))}
         </tbody>
       </table>
+      <h3>Set birthyear</h3>
+      <form onSubmit={submit}>
+        <div>
+          name
+          <input 
+            value={name}
+            onChange={({ target }) => setName(target.value)}
+          />
+        </div>
+        <div>
+          born
+          <input 
+            value={born}
+            onChange={({target}) => setBorn(target.value)}
+          />
+        </div>
+        <button type='submit'>update author</button>
+      </form>
     </div>
   )
 }
