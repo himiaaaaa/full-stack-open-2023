@@ -15,7 +15,12 @@ query{
   allBooks {
     title
     published
-    author
+    author{
+      name
+      id
+      born
+      bookCount
+    }
     id
     genres
   }
@@ -30,7 +35,12 @@ mutation createBook($title: String!, $author: String!, $published: String!, $gen
     genres: $genres
   ){
     title
-    author
+    author{
+      name
+      id
+      born
+      bookCount
+    }
     published
     genres
     id
