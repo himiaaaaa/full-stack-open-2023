@@ -22,6 +22,22 @@ mongoose.connect(MONGODB_URI)
     console.log('error connection to MongoDB:', error.message)
   })
 
+ /*  const author = new Author({ name: 'Martin Fowler', born: 1963 });
+  author.save();
+
+ const books = new Book({
+  title: 'Refactoring, edition 2',
+  published: 2018,
+  author: author._id,
+  genres: ['refactoring']
+  })
+
+  books.save().then(result => {
+    console.log('book saved!')
+    mongoose.connection.close()
+  }) 
+ */
+
 
 /*   let authors = [
     {
@@ -109,6 +125,8 @@ const typeDefs = `
     born: String
     bookCount: Int
   }
+
+
   type Book {
     title: String!
     published: String!
@@ -142,15 +160,15 @@ const resolvers = {
     authorCount: async () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
        if(args.author && args.genres){
-        return Book.find( {author: args.author, genres:{ $in: args.genres}} )
+        return Book.find( {author: args.author, genres:{ $in: args.genres}} ).populate('author')
       }
       else if(args.author){
-        return Book.find({ author: args.author })
+        return Book.find({ author: args.author }).populate('author')
       }
       else if(args.genres){
-        return Book.find({ genres:{ $in: args.genres }})
+        return Book.find({ genres:{ $in: args.genres }}).populate('author')
       }else{
-        return Book.find({})
+        return Book.find({}).populate('author')
       } 
     },
     allAuthors: async () => {
@@ -172,21 +190,39 @@ const resolvers = {
        books = books.concat(book)
        return book */
 
-       const foundAuthor = Author.findOne({ name: args.author })
-      
-      const book = new Book({ ...args, author: foundAuthor })
-      try{
-        await book.save()
-      } catch (error) {
-        throw new GraphQLError('saving book failed', {
-          extensions: {
-            code: 'BAD_USER_INPUT',
-            invalidArgs: args,
-            error
+       const existAuthor = await Author.findOne({ name: args.author })
+       if(!existAuthor){
+          const newAuthor = new Author({ name: args.author, })
+          try{
+            await newAuthor.save()
+          } catch (error) {
+            throw new GraphQLError('saving author failed', {
+              extensions: {
+                code: 'BAD_USER_INPUT',
+                invalidArgs: args,
+                error
+              }
+            })
           }
-        })
-      }
-      return book
+       }
+        const foundAuthor = await Author.findOne({ name: args.author })
+        const book = new Book({ 
+          ...args, 
+          author: foundAuthor,
+         })
+        try{
+          await book.save()
+          return book
+        } catch (error) {
+          throw new GraphQLError('saving book failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args,
+              error
+            }
+          })
+    }
+      
     },
     editAuthor: async (root, args) => {
       /* const author = authors.find(a => a.name === args.name)
@@ -197,7 +233,7 @@ const resolvers = {
         authors = authors.map(a => a.name === args.name? updatedauthor : a)
         return updatedauthor
       } */
-      const author = await Author.findone({ name: args.name })
+      const author = await Author.findOne({ name: args.name })
       if(!author){
         return null
       }else{
