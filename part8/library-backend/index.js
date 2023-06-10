@@ -1,11 +1,13 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v1: uuid } = require('uuid')
+const jwt = require('jsonwebtoken')
 
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 const Author = require('./models/author')
 const Book = require('./models/book')
+const User = require('./models/user')
 const { GraphQLError } = require('graphql')
 
 require('dotenv').config()
@@ -119,14 +121,20 @@ mongoose.connect(MONGODB_URI)
   
 
 const typeDefs = `
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+  type Token {
+    value: String!
+  }
   type Author {
     name: String!
     id: ID!
     born: String
     bookCount: Int
   }
-
-
   type Book {
     title: String!
     published: String!
@@ -139,6 +147,7 @@ const typeDefs = `
     authorCount: Int!
     allBooks(author: String, genres: String): [Book!]!
     allAuthors: [Author!]!
+    me: User
   }
   type Mutation {
     addBook(
@@ -150,47 +159,66 @@ const typeDefs = `
     editAuthor(
       name: String!
       born: String!
-    ): Author,
+    ): Author
+    createUser(
+      username: String!
+     
+    ): User
+    login(
+      username: String!
+      password: String!
+    ): Token
   }
 `
+//favoriteGenre: String!
 
 const resolvers = {
   Query: {
     bookCount: async () => Book.collection.countDocuments(),
     authorCount: async () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-       if(args.author && args.genres){
-        return Book.find( {author: args.author, genres:{ $in: args.genres}} ).populate('author')
+      const foundAuthor = await Author.findOne({ name: args.author })
+
+      if(args.author && args.genres){
+        return await Book.find( {author: foundAuthor.id , genres:{ $in: args.genres }} ).populate('author')
       }
       else if(args.author){
-        return Book.find({ author: args.author }).populate('author')
+        return await Book.find({ author: foundAuthor.id }).populate('author')
       }
       else if(args.genres){
-        return Book.find({ genres:{ $in: args.genres }}).populate('author')
+        return await Book.find({ genres:{ $in: args.genres }}).populate('author')
       }else{
-        return Book.find({}).populate('author')
+        return await Book.find({}).populate('author')
       } 
     },
     allAuthors: async () => {
       return Author.find({})
     },
+    me: async (root, args, context) => {
+      return context.currentUser
+    }
   },
   Author: {
    bookCount: async(root) => {
-    Book.find({author : root.name}).countDocuments({})
+    const foundAuthor = await Author.findOne({ name: root.name })
+    const foundBooks = await Book.find({ author : foundAuthor.id })
+    return foundBooks.length
    }
   },
   Mutation: {
-    addBook: async (root, args) => {
-      /* const book = { ...args, id: uuid() }
-
-      if(!authors.includes(book.author)){
-        authors = authors.concat({ name: book.author, id: uuid()})
-      }
-       books = books.concat(book)
-       return book */
+    addBook: async (root, args, context) => {
 
        const existAuthor = await Author.findOne({ name: args.author })
+       const currentUser = context.currentUser
+
+       if(!currentUser){
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          }
+        })
+       }
+
        if(!existAuthor){
           const newAuthor = new Author({ name: args.author, })
           try{
@@ -221,19 +249,21 @@ const resolvers = {
               error
             }
           })
-    }
-      
+      } 
     },
-    editAuthor: async (root, args) => {
-      /* const author = authors.find(a => a.name === args.name)
-      if(!author){
-        return null
-      }else{
-        const updatedauthor = { ...author, born: args.born }
-        authors = authors.map(a => a.name === args.name? updatedauthor : a)
-        return updatedauthor
-      } */
+    editAuthor: async (root, args, context) => {
+
       const author = await Author.findOne({ name: args.name })
+      const currentUser = context.currentUser
+
+       if(!currentUser){
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          }
+        })
+       }
+
       if(!author){
         return null
       }else{
@@ -251,7 +281,42 @@ const resolvers = {
       }
       return author
       }
-    }
+    },
+    createUser: async (root, args) => {
+      const user = new User({ 
+        username: args.username,
+        favoriteGenre: args.favoriteGenre
+       })
+
+      return user.save()
+        .catch(error => {
+          throw new GraphQLError('Creating the user failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
+        })
+    },
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username })
+
+      if( !user || args.password != 'numberone' ){
+        throw new GraphQLError('wrong credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT'
+          }
+        })
+      }
+
+      const userForToken = {
+        username: user.username,
+        id: user._id
+      }
+
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+    },
   }
 }
 
@@ -262,6 +327,19 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
+  context: async ({ req, res }) => {
+    const auth = req ? req.headers.authorization : null
+
+    if ( auth && auth.startsWith('Bearer ')){
+
+      const decodedToken = jwt.verify(
+        auth.substring(7), process.env.JWT_SECRET
+      )
+      const currentUser = await User
+        .findById(decodedToken.id)
+      return { currentUser }
+    } 
+  },
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
