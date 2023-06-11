@@ -2,7 +2,16 @@ import { useState } from 'react'
 
 const Books = ({show, books}) => {
   const [filter, setFilter] = useState('all genres')
-  const genres = ["refactoring", "agile", "patterns", "design", "crime", "classic", "all genres"]
+
+  const genreDuplicateArray = books.map(b => b.genres).flat()
+
+  const genres = [...new Set(genreDuplicateArray)]
+
+  genres.push("all genres")
+
+  console.log('genreArray', genres)
+
+  //const genres = ["refactoring", "agile", "patterns", "design", "crime", "classic", "all genres"]
 
   if (!show) {
     return null
