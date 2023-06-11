@@ -9,7 +9,6 @@ const NewBook = ({show, setError}) => {
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
-  //const [errorMessage] = useState(null)
   const [ createBook ] = useMutation(CREATE_BOOK,{
     refetchQueries: [{ query:ALL_BOOKS }, { query:ALL_AUTHORS }],
     onError: (error) => {
