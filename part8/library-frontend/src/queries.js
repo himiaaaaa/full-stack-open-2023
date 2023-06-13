@@ -74,3 +74,12 @@ query{
   }
 }
 `
+
+export const BOOK_ADDED = gql`
+  subscription {
+    bookadded {
+      ...BookDetails
+    }
+  }
+  ${BOOK_DETAILS}
+`
