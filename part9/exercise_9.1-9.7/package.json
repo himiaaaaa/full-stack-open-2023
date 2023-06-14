@@ -1,0 +1,17 @@
+{
+  "name": "exercise_9.1-9.7",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \\\"Error: no test specified\\\" && exit 1",
+    "ts-node": "ts-node"
+  },
+  "author": "Mia",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3"
+  }
+}
