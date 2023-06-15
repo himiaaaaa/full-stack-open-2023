@@ -19,7 +19,7 @@ const parseArguments = (args: string[]): CalcuValues => {
     }
 }
 
-const bmiCalculator = (cm: number, kg: number) => {
+export const bmiCalculator = (cm: number, kg: number) => {
     if(cm === 0 || kg === 0){
         throw new Error('weight or height cannot be zero.')
     }
