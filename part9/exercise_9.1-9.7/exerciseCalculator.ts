@@ -36,7 +36,7 @@ interface Result {
 }
 
 
-const calculateExercises = (target:number, a: number[]): Result => {
+export const calculateExercises = (target:number, a: number[]): Result => {
     const periodLength = a.length;
 
     const trainingDays = a.filter(n => n !== 0).length;
