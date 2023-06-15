@@ -1,3 +1,30 @@
+interface CalcuValue {
+    target: number;
+    time: number[]; 
+}
+
+const parseArgument = (args: string[]): CalcuValue => {
+    if(args.length < 4)
+        throw new Error('Not enough arguments')
+
+    const time: number[] = []
+
+    for(let i = 3; i < args.length; i++){
+        if(isNaN(Number(args[2])) && isNaN(Number(args[3]))){
+            throw new Error('provided value were not numbers')
+        }else{
+            time.push(Number(args[i])) 
+        }
+       
+    }
+
+    return {
+        target: Number(args[2]),
+        time: time
+    }
+    
+}
+
 interface Result {
     periodLength: number,
     trainingDays: number,
@@ -9,7 +36,7 @@ interface Result {
 }
 
 
-const calculateExercises = (a: number[], target:number): Result => {
+const calculateExercises = (target:number, a: number[]): Result => {
     const periodLength = a.length
 
     const trainingDays = a.filter(n => n !== 0).length;
@@ -55,4 +82,17 @@ const calculateExercises = (a: number[], target:number): Result => {
     } 
 }
 
-console.log(calculateExercises([2, 0, 2, 4.5, 0, 3, 1], 2))
+//console.log(calculateExercises( 2, [2, 0, 2, 4.5, 0, 3, 1]))
+
+try{
+    const { target, time } = parseArgument(process.argv)
+    const result = calculateExercises(target, time);
+    console.log(result)
+}catch(error: unknown){
+    let errorMessage = 'Something bad happend.'
+    if(error instanceof Error){
+        errorMessage += ' Error: ' + error.message;
+    }
+    console.log(errorMessage)
+}
+
