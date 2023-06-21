@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DiaryEntry, Visibility, Weather } from "./types";
 import { getAllDiaries, createDiary } from "./services/diaries";
-import { TextField, SelectChangeEvent, InputLabel, MenuItem, Select, Grid, Button } from "@mui/material";
+import { TextField, SelectChangeEvent, InputLabel, Grid, Button, RadioGroup, FormControl, FormLabel, FormControlLabel, Radio } from "@mui/material";
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,6 +11,7 @@ const App = () => {
   const [weather, setWeather] = useState(Weather.Sunny);
   const [visibility, setVisiblity] = useState(Visibility.Good);
   const [comment, setComment] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     getAllDiaries().then(data => { 
@@ -62,6 +63,12 @@ const App = () => {
     event.preventDefault()
     createDiary({date, weather, visibility, comment}).then(data => {
       setDiaries(diaries.concat(data))
+      setDate('')
+      setComment('')
+    })
+    .catch(err => {
+      const errorMessage = err.response.data.message;
+      setError(errorMessage);
     })
 
     setNewDiary('')
@@ -69,49 +76,68 @@ const App = () => {
 
   return (
     <div>
+      {error && <p style={{ color: 'red' }}>{error}</p>} 
       <h1>Add an Entry</h1>
-      <form onSubmit={diaryCreation}>
+      <form 
+        onSubmit={diaryCreation}
+      >
+        <InputLabel style={{ marginTop: 20 }}>Date</InputLabel>
         <TextField 
-          label='Date'
-          placeholder="YYYY-MM-DD"
+          type='date'
           fullWidth
           value={date}
           onChange= {({target}) => setDate(target.value)}
         />
 
-        <InputLabel style={{ marginTop: 20 }}>Weather</InputLabel>
-        <Select
-          label="Weather"
-          fullWidth
+  <div>
+    <FormControl>
+        <FormLabel 
+          id="demo-controlled-radio-buttons-group"
+          style={{ marginTop: 20 }}
+        >
+          Weather
+        </FormLabel>
+        <RadioGroup
+          row
+          name="Weather"
           value={weather}
           onChange={onWeatherChange}
         >
           {weatherOptions.map(option => 
-            <MenuItem
+            <FormControlLabel
               key={option.label}
               value={option.value}
-            >
-              {option.label}
-            </MenuItem>
+              control={<Radio />}
+              label={option.value}
+            />
           )}
-        </Select>
+        </RadioGroup>
+     </FormControl>
+  </div>
 
-        <InputLabel style={{ marginTop: 20 }}>Visibility</InputLabel>
-        <Select
-          label="Visiblity"
-          fullWidth
+    <FormControl>
+       <FormLabel 
+          id="demo-controlled-radio-buttons-group"
+          style={{ marginTop: 20 }}
+        >
+          Visibility
+        </FormLabel>
+        <RadioGroup
+          name="Visiblity"
+          row
           value={visibility}
           onChange={onVisibilityChange}
         >
           {visibilityOptions.map(option => 
-            <MenuItem
+            <FormControlLabel
               key={option.label}
               value={option.value}
-            >
-              {option.label}
-            </MenuItem>
+              control={<Radio />}
+              label={option.value}
+            />
           )}
-        </Select>
+        </RadioGroup>
+      </FormControl>
         
         <TextField 
           style={{ marginTop: 20 }}
