@@ -9,19 +9,23 @@ const getPatient = (): Patient[] => {
 };
 
 const getNoSsnPatient = (): NoSsnPatient[] => {
-    return patientData.map(({ id, name, dateOfBirth, gender, occupation }) => 
+    return patientData.map(({ id, name, dateOfBirth, gender, occupation, entries }) => 
     ({
         id,
         name,
         dateOfBirth,
         gender,
         occupation,
+        entries
     }));
+};
+
+const getPatientForOne = (id: string): Patient | undefined => {
+    return patientData.find(p => p.id === id);
 };
 
 
 const addPatient = ( entry: NewPatient ): Patient => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const id = uuid();
     const newPatient = {
         id,
@@ -35,5 +39,6 @@ const addPatient = ( entry: NewPatient ): Patient => {
 export default {
     getPatient,
     getNoSsnPatient,
-    addPatient
+    addPatient,
+    getPatientForOne
 };

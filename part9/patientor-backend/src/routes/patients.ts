@@ -9,6 +9,10 @@ router.get('/', (_req, res) => {
     res.send(patientService.getNoSsnPatient());
 });
 
+router.get('/:id', (req, res) => {
+    res.send(patientService.getPatientForOne(req.params.id));
+});
+
 
 router.post('/', (req, res) => {
     try{
