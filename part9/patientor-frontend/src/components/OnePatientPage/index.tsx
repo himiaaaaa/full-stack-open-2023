@@ -26,6 +26,15 @@ const OnePatientPage = ({ patient }: Props) => {
        <Typography component="h5" variant="h5">{patient?.name}{genderId(patient?.gender)}</Typography>
        <p>ssn: {patient?.ssn}</p>
        <p>occupation: {patient?.occupation}</p>
+       <Typography component="h6" variant="h6">entries</Typography>
+       {patient?.entries.map(e => 
+            <div key={e.id}>
+            <p>{e.date}{' '}{e.description}</p>
+            <ul>
+                {e.diagnosisCodes?.map(d => <li key={d}>{d}</li>)}
+            </ul>
+            </div>
+        )}
     </div>
    )
 }
