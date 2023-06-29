@@ -1,5 +1,5 @@
-import { NewPatient } from "./types";
-import { Gender } from "./types";
+import { NewPatient } from "../types";
+import { Gender } from "../types";
 
 const isString = (text: unknown) : text is string => {
     return typeof text === 'string' || text instanceof String;

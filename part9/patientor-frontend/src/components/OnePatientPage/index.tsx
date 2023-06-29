@@ -33,7 +33,7 @@ const HealthRating = (health: HealthCheckRating) => {
         case 2:
             return <FavoriteIcon sx={{ color: "blue" }}/>;
         case 3:
-            return <FavoriteIcon sx={{ color: "green" }}/>;
+            return <FavoriteIcon sx={{ color: "red" }}/>;
     }
 }
 
