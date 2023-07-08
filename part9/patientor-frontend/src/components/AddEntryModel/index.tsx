@@ -1,11 +1,11 @@
 import { Alert, Dialog, DialogTitle, DialogContent, Divider } from '@mui/material';
 
 import AddEntryForm from './AddEntryForm';
-import { HealthCheckEntryFormValue } from "../../types";
+import { EntryWithoutId } from "../../types";
 
 interface Props {
   modalOpen: boolean;
-  onSubmit: (values: HealthCheckEntryFormValue) => void;
+  onSubmit: (values: EntryWithoutId) => void;
   onClose: () => void;
   error?: string;
 }

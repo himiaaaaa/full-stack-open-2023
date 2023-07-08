@@ -68,4 +68,11 @@ export type Entry =
 | OccupationalHealthcareEntry
 | HealthCheckEntry; 
 
-export type HealthCheckEntryFormValue = Omit<HealthCheckEntry, 'id'>
+/* export type HealthCheckEntryFormValue = Omit<HealthCheckEntry, 'id'> */
+
+type UnionOmit<T, K extends string | number | symbol> 
+    = T extends unknown ?
+        Omit<T, K> 
+        : never;
+
+export type EntryWithoutId = UnionOmit<Entry, 'id'>;

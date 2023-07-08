@@ -1,5 +1,5 @@
 import {  useState } from "react";
-import { Patient, Gender, Diagnosis, Entry, HealthCheckRating, HealthCheckEntryFormValue } from "../../types";
+import { Patient, Gender, Diagnosis, Entry, HealthCheckRating, EntryWithoutId } from "../../types";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -90,11 +90,12 @@ const OnePatientPage = ({ patient, diagnoses }: Props) => {
         setError(undefined);
       };
   
-    const submitNewEntry = async (values: HealthCheckEntryFormValue) => {
+    const submitNewEntry = async (values: EntryWithoutId) => {
         try {
             if(patient){
                 const entry = await patientService.addEntry(patient.id, values);
                 patient = {...patient, entries: patient.entries.concat(entry)};
+                setModalOpen(false);
             }
         } catch (e: unknown) {
         if (axios.isAxiosError(e)) {
@@ -123,7 +124,7 @@ const OnePatientPage = ({ patient, diagnoses }: Props) => {
             onClose={closeModal}
             modalOpen={modalOpen}
         />
-       <Button variant="outlined" size="small" onClick={() => openModal()}>
+       <Button variant="contained" onClick={() => openModal()}>
          Add New Entry
        </Button>
        <Typography component="h6" variant="h6">entries</Typography>
