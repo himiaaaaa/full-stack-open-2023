@@ -11,6 +11,8 @@ import diagnoseService from "./services/diagnosis";
 import PatientListPage from "./components/PatientListPage";
 import OnePatientPage from "./components/OnePatientPage";
 
+import DiagnosesContext  from "./contexts/diagnosesContext";
+
 const App = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
@@ -32,13 +34,12 @@ const App = () => {
 
   }, []);
 
-  const match = useMatch('/patients/:id')
+   const match = useMatch('/patients/:id')
 
-  const patient = match
+   const patient = match
     ? patients.find(p => p.id === match.params.id)
     : null
 
-  
   return (
     <div className="App">
         <Container>
@@ -49,10 +50,12 @@ const App = () => {
             Home
           </Button>
           <Divider hidden />
-          <Routes>
-            <Route path="/" element={<PatientListPage patients={patients} setPatients={setPatients} />} />
-            <Route path="/patients/:id" element={<OnePatientPage patient={patient} diagnoses={diagnoses}/>} />
-          </Routes>
+          <DiagnosesContext.Provider value={diagnoses}>
+            <Routes>
+              <Route path="/" element={<PatientListPage patients={patients} setPatients={setPatients} />} />
+              <Route path="/patients/:id" element={<OnePatientPage patient={patient} diagnoses={diagnoses} />} />
+            </Routes>
+          </DiagnosesContext.Provider>
         </Container>
     </div>
   );

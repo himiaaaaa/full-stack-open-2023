@@ -1,12 +1,15 @@
-import { Patient, Gender, Diagnosis, Entry, HealthCheckRating,  } from "../../types";
+import {  useState } from "react";
+import { Patient, Gender, Diagnosis, Entry, HealthCheckRating, HealthCheckEntryFormValue } from "../../types";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import WorkIcon from '@mui/icons-material/Work';
-import { Typography } from "@mui/material";
+import { Typography, Button } from "@mui/material";
 import Box from '@mui/material/Box';
-
+import patientService from "../../services/patients";
+import axios from "axios";
+import AddEntryModel from "../AddEntryModel";
 
 interface Props {
     patient : Patient | null | undefined
@@ -47,7 +50,9 @@ const EntryDetails = ({ entry }: { entry: Entry } ) => {
     switch(entry.type){
         case "HealthCheck": 
             return (
-                <div>{HealthRating(entry.healthCheckRating)}</div>
+                <div>
+                    {HealthRating(entry.healthCheckRating)}
+                </div>
             );
         case "Hospital":
             return (
@@ -74,11 +79,53 @@ const EntryDetails = ({ entry }: { entry: Entry } ) => {
 }
 
 const OnePatientPage = ({ patient, diagnoses }: Props) => {
+
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [error, setError] = useState<string>();
+    
+    const openModal = (): void => setModalOpen(true);
+
+    const closeModal = (): void => {
+        setModalOpen(false);
+        setError(undefined);
+      };
+  
+    const submitNewEntry = async (values: HealthCheckEntryFormValue) => {
+        try {
+            if(patient){
+                const entry = await patientService.addEntry(patient.id, values);
+                patient = {...patient, entries: patient.entries.concat(entry)};
+            }
+        } catch (e: unknown) {
+        if (axios.isAxiosError(e)) {
+          if (e?.response?.data && typeof e?.response?.data === "string") {
+            const message = e.response.data.replace('Something went wrong. Error: ', '');
+            console.error(message);
+            setError(message);
+          } else {
+            setError("Unrecognized axios error");
+          }
+        } else {
+          console.error("Unknown error", e);
+          setError("Unknown error");
+        }
+      }
+    };
+
    return(
     <div>
        <Typography component="h5" variant="h5">{patient?.name}{genderId(patient?.gender)}</Typography>
        <p>ssn: {patient?.ssn}</p>
        <p>occupation: {patient?.occupation}</p>
+        <AddEntryModel
+            onSubmit={submitNewEntry}
+            error={error}
+            onClose={closeModal}
+            modalOpen={modalOpen}
+        />
+       <Button variant="outlined" size="small" onClick={() => openModal()}>
+         Add New Entry
+       </Button>
        <Typography component="h6" variant="h6">entries</Typography>
        {patient?.entries.map(e => {
             return (
